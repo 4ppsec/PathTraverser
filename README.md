@@ -15,4 +15,4 @@
 Feel free to add issues for fixes and enhancements...
 
 Cheers!
-pt[AT]appsec[DOT]it
+git[AT]appsec[DOT]it
