@@ -15,4 +15,4 @@
 Feel free to add issues for fixes and enhancements...
 
 Cheers!
-Tal <pt[AT]appsec[DOT]it>
+pt[AT]appsec[DOT]it
