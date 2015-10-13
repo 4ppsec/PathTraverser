@@ -1137,6 +1137,11 @@ class App:
                 file.write('file=\n')
                 self.editStatus('Could not save - please select a file and try again...', 3)
                 return 1
+        if self.isTraversal.get() == "n":
+            file.write("attack=fb\n")
+        else:
+            file.write("attack=pt\n")
+            
         file.close()
         return 1
 
@@ -1210,7 +1215,7 @@ class App:
                     spectext = text[startpoint:endpoint+startpoint]
 
             lines = spectext.split('\n')
-            if len(lines) != 10:
+            if len(lines) != 11:
                 self.editStatus('Corrupted session file... could not load', 3)
                 return 0
             
@@ -1246,7 +1251,14 @@ class App:
                 self.entry_host.insert(0, lines[0][5:])
                 self.entry_port.insert(0, lines[1][5:])
                 self.entry_user.insert(0, lines[2][5:])
-    
+
+            if lines[9][7:] == 'pt':
+                self.isTraversal.set("y")
+                self.noPathTraversal()
+            else:
+                self.isTraversal.set("n")
+                self.noPathTraversal()
+            
             self.tabs.select(self.tabs.tabs()[0])
             self.editStatus("Loaded '" +lines[0][5:] +"' details...", 3)
             file.close()
@@ -1700,11 +1712,10 @@ class App:
                 ############################################################################################################
 
     def executeRun(self):
-        #self.editStatus("Starting, please hold...", 1)
         self.startPressed = 1
+        self.editStatus("Initializing! please wait...", 1)
         if self.isContinue == 0:
             self.progress["value"] = 0
-            self.editStatus("\n\nInitializing! please wait...", 1)
             # print Date to Results Tab
             self.lastTime = "\n\n*************************** [ %s ]***************************\n" %str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             self.progress["value"] = 3
@@ -1894,7 +1905,6 @@ class App:
                 return i
             else:
                 i = i + 1
-
         return -1
         
     # receives:
@@ -1908,7 +1918,6 @@ class App:
         self.runIn200Mode = self.loc200()
         for word in self.word_list:
             if self.stopThread == 1:
-                #self.counter = counter
                 return 1
             
             else:
@@ -1921,8 +1930,6 @@ class App:
                 try:
                     myRequest = urllib2.Request(word, data=None, headers=self.headers)
                     myResponse = urllib2.urlopen(myRequest, timeout=5)
-                       
-                    ##DEBUG: print _response.getcode()
                     res_html = myResponse.read()
                     myResponse.close()
 
@@ -1959,10 +1966,7 @@ class App:
                     else:
                         self.editStatus('Error! server is not responding; stopped at line: %d, URL: %s\n' %(self.lineCounter, word), 1)"""
                     self.editStatus(str(e), 2)
-                        
-                    self.button_run.configure(state=NORMAL, text="Start", command=self.runPressed)
-                    #self.button_stop.configure(state=NORMAL, text="Quit", command=self.executeQuit)
-                    return 0
+                    self.terminator()
 
 
                 except Exception as e:
@@ -1975,9 +1979,7 @@ class App:
         
         else:
             self.editStatus('errrr... something went wrong!', 3)
-            self.button_run.configure(state=NORMAL, text="Start", command=self.runPressed)
-            #self.button_stop.configure(state=NORMAL, text="Quit", command=self.executeQuit)
-            return 0
+            self.terminator()
 
     # gran finale!
     def finito(self):
@@ -1987,15 +1989,12 @@ class App:
             file.close()
         self.editStatus('                 ', 2)
         self.editStatus('** !!! Mission accomplished !!! **', 3)
-        self.editStatus('**********************************', 2)
-        self.editStatus('You can view the results in the Results tab', 1)
+        self.editStatus('Completed! You can view the results in the Results tab', 1)
         self.filemenu.entryconfig("Run", state="normal")
         self.filemenu.entryconfig("Stop", state="disabled")
-        self.filemenu.entryconfig("Pause / Continue", state="disabled")
-        
-        self.isContinue = 0
-        self.button_run.configure(state=NORMAL, text="Start", command=self.runPressed)
-        #self.button_stop.configure(state=NORMAL, text="Quit", command=self.executeQuit)
+        self.filemenu.entryconfig("Pause / Continue", state="disabled")  
+        self.terminator()
+
 
     # execution is done with something wrong...
     def terminator(self):
@@ -2006,7 +2005,9 @@ class App:
         self.lineCounter = 0
         for file in self.filesToClose:
             file.close()
-        #self.button_run.configure(text="Start", command=self.runPressed)    
+        self.filemenu.entryconfig("Run", state="normal")
+        self.filemenu.entryconfig("Stop", state="disabled")
+        self.filemenu.entryconfig("Pause / Continue", state="disabled")   
 
     # returns list of  HTTP Status Codes selected by the user
     def getCodeSelection(self):
