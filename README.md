@@ -15,5 +15,4 @@
 Feel free to add issues for fixes and enhancements...
 
 Cheers!
-Tal
-pt@appsec.it
+Tal <pt[AT]appsec[DOT]it>
